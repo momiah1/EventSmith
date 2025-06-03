@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Event Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 30px;
+      padding: 50px 20px;
+      margin: 0;
+    }
+    .sidebar {
+      width: 300px;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      width: 100%;
+      max-width: 850px;
+    }
+    .sidebar h4 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .config-box {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9fb;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .config-box label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .config-box input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .config-box button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .config-box button:hover {
+      background-color: #218838;
+    }
+    .log-entry {
+      position: relative;
+      overflow: visible;
+      margin-bottom: 12px;
+      padding: 12px;
+      background-color: #f9f9fb;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #333;
+      cursor: pointer;
+    }
+    .log-tooltip {
+  display: none;
+  position: fixed; /* changed from absolute */
+  left: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
+  max-width: 320px;
+  pointer-events: none;
+}
+    .log-entry:hover .log-tooltip {
+      display: block;
+    }
+    .event-section {
+      padding: 30px;
+      border: 1px solid #ddd;
+      width: 100%;
+      border-radius: 15px;
+      background-color: white;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    .close-panel-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #dc3545;
+      border: none;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #fff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      line-height: 16px;
+      text-align: center;
+      padding: 0;
+    }
+
+    .close-panel-btn:hover {
+      background-color: #c82333;
+    }
+    .section-image {
+      width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 10px 0 20px 0;
+    }
+    h3 {
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 0;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .input-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      flex: 1;
+      min-width: 0;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 18px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #entity-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #entity-section.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    body.dark {
+  background-color: #1c1c1e;
+  color: #f1f1f1;
+}
+
+body.dark .sidebar {
+  background-color: #2a2a2c;
+  border-color: #444;
+}
+
+body.dark .event-section,
+body.dark .config-box,
+body.dark .log-entry,
+body.dark .log-tooltip {
+  background-color: #2a2a2c;
+  border-color: #444;
+  color: #f1f1f1;
+}
+
+body.dark input,
+body.dark button {
+  background-color: #3a3a3c;
+  color: #f1f1f1;
+  border-color: #555;
+}
+
+body.dark button:hover {
+  background-color: #555;
+}
+
+body.dark #toast {
+  background-color: #44b368;
+}
+
+body.dark h3,
+body.dark label {
+  color: #f1f1f1;
+}
+
+    body.dark input::placeholder {
+      color: #ccc;
+    }
+        body.dark .sidebar h4 {
+          color: #f1f1f1;
+        }
+
+        .modal-content {
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          text-align: center;
+          color: #000;
+        }
+
+        body.dark .modal-content {
+          background-color: #2a2a2c;
+          color: #f1f1f1;
+        }
+        body.dark .modal-content p {
+          color: #f1f1f1;
+        }
+
+        body.dark #warehouse-preview-section {
+          background-color: #2a2a2c !important;
+          border-color: #444 !important;
+          color: #f1f1f1 !important;
+        }
+
+        body.dark #warehouse-preview-section h3 {
+          color: #f1f1f1 !important;
+        }
+
+        body.dark #warehouse-preview-section table {
+          background-color: #2a2a2c !important;
+          color: #f1f1f1 !important;
+        }
+ 
+        body.dark #warehouse-preview-section th {
+          background-color: #333 !important;
+          color: #f1f1f1 !important;
+          border-color: #555 !important;
+        }
+ 
+        body.dark #warehouse-preview-section td {
+          background-color: #2a2a2c !important;
+          color: #f1f1f1 !important;
+          border-color: #555 !important;
+        }
+  
+    /* Consistent styling for ecomm/vertical event buttons */
+    #ecomm-panel .vertical-event,
+    #ecomm-panel .ecomm-event {
+      background-color: #007bff;
+      color: white;
+      font-size: 14px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      width: auto;
+    }
+    #ecomm-panel .vertical-event:hover,
+    #ecomm-panel .ecomm-event:hover {
+      background-color: #0056b3;
+    }
+
+  /* Compact styling for #ecomm-panel */
+  #ecomm-panel h4 {
+    margin: 10px 0 6px 0;
+    font-size: 16px;
+  }
+
+  #ecomm-panel .event-section-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  #ecomm-panel .event-section-group button {
+    /* removed font-size/padding/border-radius to allow .vertical-event/.ecomm-event global styling */
+  }
+
+  body.dark #ecomm-panel {
+    background-color: #2a2a2c !important;
+    border-color: #444 !important;
+  }
+
+  body.dark #ecomm-panel .vertical-event,
+  body.dark #ecomm-panel .ecomm-event {
+    background-color: #1f6feb !important;
+    color: #fff;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    width: auto;
+  }
+  body.dark #ecomm-panel .vertical-event:hover,
+  body.dark #ecomm-panel .ecomm-event:hover {
+    background-color: #124da0 !important;
+  }
+
+        body.dark #live-preview-section .event-section {
+          background-color: #2a2a2c !important;
+          border-color: #444 !important;
+          color: #f1f1f1;
+        }
+        
+        body.dark #live-preview-section .event-section pre {
+          background-color: #1e1e1e !important;
+          color: #f1f1f1 !important;
+          border-color: #444 !important;
+        }
+        
+        body.dark #live-preview-section pre {
+          background-color: #1e1e1e !important;
+          color: #f1f1f1 !important;
+          border-color: #444 !important;
+        }
+        
+        body.dark #warehouse-preview-section td pre {
+          background-color: #1e1e1e !important;
+          color: #f1f1f1 !important;
+            border: none !important;
+        }
+        
+        body.dark #pinned-log pre {
+          background-color: #1e1e1e !important;
+          color: #f1f1f1 !important;
+          border: 1px solid #444 !important;
+        }
+
+        #version-history-panel {
+  margin-bottom: 20px;
+}
+
+#version-history-panel h3,
+#version-history-panel h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+#version-history-panel button {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+#version-history-panel button:hover {
+  background-color: #e0e0e0;
+}
+
+body.dark #version-history-panel {
+  background-color: #2a2a2c;
+  border-color: #444;
+  color: #f1f1f1;
+}
+
+body.dark #version-history-panel h3,
+body.dark #version-history-panel h4 {
+  color: #f1f1f1;
+}
+
+body.dark #version-history-panel button {
+  background-color: #3a3a3c;
+  color: #f1f1f1;
+  border-color: #555;
+}
+
+body.dark #version-history-panel button:hover {
+  background-color: #555;
+            }
+            
+    /* Live preview panel adjustments for multiple entities */
+    #live-preview-section .event-section > div {
+      flex-wrap: wrap;
+    }
+    #live-preview-section .event-section pre {
+      flex: 1 1 300px;
+    }
+      </style>
+</head>
+<body>
+  <!--Sidebar Submission Section--->
+  <div class="sidebar">
+    <h4>Submission History</h4>
+  <div style="margin-bottom: 20px; display: flex; gap: 8px; justify-content: flex-start;">
+    <button id="toggle-theme" style="background-color: #444; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🌙</button>
+    <button id="toggle-preview" style="background-color: #444; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🧪</button>
+    <button id="toggle-warehouse" style="background-color: #444; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">📦</button>
+    <button id="toggle-ecomm" style="background-color: #444; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">🛒</button>
+    <button id="toggle-version-history" style="background-color: #444; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">📜</button>
+</div>
+    <div class="config-box">
+      <label for="user-id">userID</label>
+      <input type="text" id="user-id" placeholder="Enter userID">
+      <label>
+        <a 
+          href="https://console.snowplowanalytics.com/b12539df-a711-42bd-bdfa-175308c55fd5/data-products/34a733c1-8550-4d61-92a3-c0827b685b29" 
+          target="_blank" 
+          style="text-decoration: none; color: inherit; font-weight: bold;"
+        >
+          Data Product ID 🔗
+        </a>
+      </label>
+      <input type="text" id="data-product-id" placeholder="Enter Data Product ID">
+      <label for="app-id">appID</label>
+      <input type="text" id="app-id" placeholder="Enter appID">
+      <label for="collector">Collector Destination</label>
+      <input type="text" id="collector" placeholder="Enter collector URI">
+      <button id="set-fields-btn">Set Fields</button>
+    </div>
+    <button id="generate-combinations" style="width: 100%; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 6px; margin-bottom: 20px; cursor: pointer;">
+      🎲 Generate Random Combinations
+    </button>
+    <div id="pinned-log"></div>
+    <div id="history-log"></div>
+  </div>
+
+  <!------------Event Section--------------->
+  <div class="main-content">
+
+  <!--Version History Panel - for old events/entities-->
+  <div id="version-history-panel" class="event-section" style="display: none;">
+    <button class="close-panel-btn" onclick="this.parentElement.style.display='none'">✖</button>
+    <h3>📜 Version History</h3>
+    <h4>Past Events</h4>
+    <button id="clear-events" style="background-color: #dc3545; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 12px;">🧹 Clear Events</button>
+    <div id="past-events-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;">
+    <h4>Past Entities</h4>
+    <button id="clear-entities" style="background-color: #dc3545; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 12px;">🧹 Clear Entities</button>
+    <div id="past-entities-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+    <div id="trash-can" style="margin-top: 30px; text-align: center;">
+      <div id="drop-zone" style="width: 60px; height: 60px; margin: 0 auto; background-color: #ddd; border: 2px dashed #aaa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer;">
+        🗑️
+      </div>
+      <p style="font-size: 12px; color: #666;">Drag here to delete</p>
+    </div>
+  </div>
+
+      <div id="warehouse-preview-section" class="event-section" style="background: #fefefe; border: 1px dashed #ccc;">
+        <button class="close-panel-btn" onclick="this.parentElement.style.display='none'">✖</button>
+        <h3>📊 Warehouse Table Preview</h3>
+        <div style="overflow-x: auto;">
+          <table id="warehouse-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <thead>
+              <tr style="background-color: #f0f0f0;">
+                <th style="padding: 8px; border: 1px solid #ccc;">event_name</th>
+                <th style="padding: 8px; border: 1px solid #ccc;">data_product_id</th>
+                <th style="padding: 8px; border: 1px solid #ccc;">timestamp</th>
+                <th style="padding: 8px; border: 1px solid #ccc;">properties</th>
+                <th style="padding: 8px; border: 1px solid #ccc;">entity_name</th>
+                <th style="padding: 8px; border: 1px solid #ccc;">entity_properties</th>
+              </tr>
+            </thead>
+            <tbody id="warehouse-table-body">
+              <tr>
+                <td colspan="6" style="padding: 12px; text-align: center; color: #999;">Waiting for events...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+        <div id="live-preview-section">
+          <div class="event-section" style="background: #eef5ff; border: 1px dashed #8aaef7;">
+            <button class="close-panel-btn" onclick="this.parentElement.parentElement.style.display='none'">✖</button>
+            <h3>🧪 Event + Entity Relationship</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <pre id="event-preview" style="flex: 1; white-space: pre-wrap; font-size: 14px; font-family: monospace; background: #fff; color: #333; padding: 12px; border-radius: 8px; border: 1px solid #ccc; min-height: 150px; max-height: 300px; overflow-y: auto;">Waiting for input...</pre>
+              <div style="font-weight: bold; font-size: 18px;">+</div>
+              <pre id="entity-preview" style="flex: 1; white-space: pre-wrap; font-size: 14px; font-family: monospace; background: #fff; color: #333; padding: 12px; border-radius: 8px; border: 1px solid #ccc; min-height: 150px; max-height: 300px; overflow-y: auto;">Waiting for input...</pre>
+            </div>
+          </div>
+        </div>
+        <div id="ecomm-panel" class="event-section" style="display: none; flex-direction: column; gap: 10px;">
+          <div style="margin-bottom: 10px;">
+            <label for="vertical-select" class="vertical-label">Vertical:</label>
+            <select id="vertical-select" class="vertical-dropdown">
+              <option value="ecommerce" selected>E-commerce</option>
+              <option value="media">Media</option>
+              <option value="publishing">Publishing</option>
+              <option value="business">Business</option>
+              <option value="education">Education</option>
+              <option value="gaming">Gaming</option>
+              <option value="financial">Financial</option>
+              <option value="gambling">Gambling</option>
+            </select>
+          </div>
+          <button class="close-panel-btn" onclick="this.parentElement.style.display='none'">✖</button>
+          <div class="vertical-group" data-vertical="ecommerce" style="display: block;">
+            <h4>E-commerce Events</h4>
+            <div class="event-section-group">
+              <button class="ecomm-event" data-event="add_to_cart" data-props='{"product_id":"123","quantity":"2","price":"29.99","currency":"USD"}'>Add to Cart</button>
+              <button class="ecomm-event" data-event="remove_from_cart" data-props='{"product_id":"123","quantity":"1","price":"29.99","currency":"USD"}'>Remove from Cart</button>
+              <button class="ecomm-event" data-event="begin_checkout" data-props='{"cart_id":"cart456","step":"shipping","total":"29.99","currency":"USD"}'>Begin Checkout</button>
+              <button class="ecomm-event" data-event="make_purchase" data-props='{"order_id":"ord789","total":"29.99","payment_method":"credit_card","currency":"USD"}'>Make Purchase</button>
+              <button class="ecomm-event" data-event="view_product" data-props='{"product_id":"123","category":"shoes","brand":"Nike","price":"29.99"}'>View Product</button>
+              <button class="ecomm-event" data-event="apply_coupon" data-props='{"coupon_code":"SPRING25","discount":"10%","cart_id":"cart456"}'>Apply Coupon</button>
+              <button class="ecomm-event" data-event="view_cart" data-props='{"cart_id":"cart456","item_count":"1","subtotal":"29.99"}'>View Cart</button>
+              <button class="ecomm-event" data-event="update_quantity" data-props='{"product_id":"123","new_quantity":"2","cart_id":"cart456"}'>Update Quantity</button>
+              <button class="ecomm-event" data-event="shipping_selected" data-props='{"shipping_method":"express","cost":"5.99","cart_id":"cart456"}'>Shipping Selected</button>
+              <button class="ecomm-event" data-event="payment_info_entered" data-props='{"payment_type":"credit_card","billing_zip":"10001","cart_id":"cart456"}'>Payment Info Entered</button>
+              <button class="ecomm-event" data-event="order_reviewed" data-props='{"order_id":"ord789","items":"1","total":"29.99"}'>Order Reviewed</button>
+              <button class="ecomm-event" data-event="order_confirmed" data-props='{"order_id":"ord789","status":"confirmed","confirmation_time":"2025-05-01T14:00:00Z"}'>Order Confirmed</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="media" style="display: none;">
+            <h4>Media Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="video_play" data-props='{"video_id":"abc123","duration":"300","resolution":"1080p","autoplay":"true"}'>Video Play</button>
+              <button class="vertical-event" data-event="video_pause" data-props='{"video_id":"abc123","current_time":"120","paused_by":"user","resolution":"1080p"}'>Video Pause</button>
+              <button class="vertical-event" data-event="audio_play" data-props='{"audio_id":"aud456","duration":"180","bitrate":"320kbps","autoplay":"false"}'>Audio Play</button>
+              <button class="vertical-event" data-event="audio_pause" data-props='{"audio_id":"aud456","current_time":"60","paused_by":"user"}'>Audio Pause</button>
+              <button class="vertical-event" data-event="media_share" data-props='{"media_id":"abc123","platform":"twitter","shared_by":"user123"}'>Media Share</button>
+              <button class="vertical-event" data-event="playlist_created" data-props='{"viewer_id":"u789","playlist_id":"pl001","playlist_name":"My Favorites"}'>Playlist Created</button>
+              <button class="vertical-event" data-event="volume_changed" data-props='{"video_id":"abc123","volume_level":"80"}'>Volume Changed</button>
+              <button class="vertical-event" data-event="media_downloaded" data-props='{"media_id":"abc123","format":"mp4","size_mb":"250"}'>Media Downloaded</button>
+              <button class="vertical-event" data-event="subtitle_enabled" data-props='{"video_id":"abc123","language":"en"}'>Subtitle Enabled</button>
+              <button class="vertical-event" data-event="buffering_started" data-props='{"media_id":"abc123","timestamp":"120"}'>Buffering Started</button>
+              <button class="vertical-event" data-event="resolution_changed" data-props='{"video_id":"abc123","old_resolution":"720p","new_resolution":"1080p"}'>Resolution Changed</button>
+              <button class="vertical-event" data-event="media_stopped" data-props='{"media_id":"abc123","stopped_at":"220"}'>Media Stopped</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="publishing" style="display: none;">
+            <h4>Publishing Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="article_view" data-props='{"article_id":"xyz789","category":"tech","author":"Jane Doe","word_count":"1200"}'>Article View</button>
+              <button class="vertical-event" data-event="newsletter_signup" data-props='{"newsletter_id":"nl001","email":"user@example.com","signup_source":"footer","frequency":"weekly"}'>Newsletter Signup</button>
+              <button class="vertical-event" data-event="comment_posted" data-props='{"article_id":"xyz789","reader_id":"u321","comment_id":"c123","text_length":"180"}'>Comment Posted</button>
+              <button class="vertical-event" data-event="article_liked" data-props='{"article_id":"xyz789","reader_id":"u321","liked_on":"2025-05-01"}'>Article Liked</button>
+              <button class="vertical-event" data-event="author_followed" data-props='{"author_id":"a555","reader_id":"u321","followed_on":"2025-05-01"}'>Author Followed</button>
+              <button class="vertical-event" data-event="article_shared" data-props='{"article_id":"xyz789","platform":"facebook","shared_by":"u321"}'>Article Shared</button>
+              <button class="vertical-event" data-event="bookmark_added" data-props='{"article_id":"xyz789","reader_id":"u321","bookmark_time":"2025-05-01T10:00:00Z"}'>Bookmark Added</button>
+              <button class="vertical-event" data-event="paywall_viewed" data-props='{"article_id":"xyz789","reader_id":"u321","paywall_type":"hard"}'>Paywall Viewed</button>
+              <button class="vertical-event" data-event="subscription_purchased" data-props='{"reader_id":"u321","plan":"premium","price":"9.99","currency":"USD"}'>Subscription Purchased</button>
+              <button class="vertical-event" data-event="article_reported" data-props='{"article_id":"xyz789","reader_id":"u321","reason":"spam"}'>Article Reported</button>
+              <button class="vertical-event" data-event="comment_liked" data-props='{"comment_id":"c123","reader_id":"u321"}'>Comment Liked</button>
+              <button class="vertical-event" data-event="article_downloaded" data-props='{"article_id":"xyz789","format":"PDF","reader_id":"u321"}'>Article Downloaded</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="business" style="display: none;">
+            <h4>Business Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="appointment_booked" data-props='{"service":"consultation","date":"2025-05-10","time":"14:00","location":"NYC"}'>Appointment Booked</button>
+              <button class="vertical-event" data-event="account_created" data-props='{"account_id":"ac321","user_role":"admin","created_at":"2025-01-01T10:00:00Z","status":"active"}'>Account Created</button>
+              <button class="vertical-event" data-event="subscription_started" data-props='{"subscription_id":"sub111","plan":"premium","start_date":"2025-06-01","auto_renew":"true"}'>Subscription Started</button>
+              <button class="vertical-event" data-event="invoice_sent" data-props='{"invoice_id":"inv123","amount":"500","due_date":"2025-06-15","recipient":"clientA"}'>Invoice Sent</button>
+              <button class="vertical-event" data-event="payment_received" data-props='{"invoice_id":"inv123","amount":"500","received_on":"2025-06-10","method":"bank_transfer"}'>Payment Received</button>
+              <button class="vertical-event" data-event="lead_created" data-props='{"lead_id":"lead999","source":"website","assigned_to":"sales1","created_on":"2025-05-01"}'>Lead Created</button>
+              <button class="vertical-event" data-event="account_login" data-props='{"account_id":"ac321","login_time":"2025-05-01T09:00:00Z"}'>Account Login</button>
+              <button class="vertical-event" data-event="account_logout" data-props='{"account_id":"ac321","logout_time":"2025-05-01T17:00:00Z"}'>Account Logout</button>
+              <button class="vertical-event" data-event="meeting_scheduled" data-props='{"meeting_id":"meet001","account_id":"ac321","scheduled_for":"2025-05-15T11:00:00Z"}'>Meeting Scheduled</button>
+              <button class="vertical-event" data-event="contract_signed" data-props='{"contract_id":"cont123","account_id":"ac321","signed_on":"2025-05-01"}'>Contract Signed</button>
+              <button class="vertical-event" data-event="support_ticket_created" data-props='{"ticket_id":"tick001","account_id":"ac321","issue":"billing"}'>Support Ticket Created</button>
+              <button class="vertical-event" data-event="user_promoted" data-props='{"account_id":"ac321","user_id":"user999","new_role":"manager"}'>User Promoted</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="education" style="display: none;">
+            <h4>Education Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="course_started" data-props='{"course_id":"ed101","title":"Intro to AI","instructor":"Dr. Smith","duration":"6 weeks"}'>Course Started</button>
+              <button class="vertical-event" data-event="course_completed" data-props='{"course_id":"ed101","title":"Intro to AI","instructor":"Dr. Smith","grade":"A"}'>Course Completed</button>
+              <button class="vertical-event" data-event="lesson_viewed" data-props='{"lesson_id":"l201","course_id":"ed101","student_id":"u555","viewed_on":"2025-05-01"}'>Lesson Viewed</button>
+              <button class="vertical-event" data-event="quiz_attempted" data-props='{"quiz_id":"q321","student_id":"u555","score":"90","attempt":"1"}'>Quiz Attempted</button>
+              <button class="vertical-event" data-event="certificate_earned" data-props='{"certificate_id":"cert001","student_id":"u555","course_id":"ed101","issued_on":"2025-06-01"}'>Certificate Earned</button>
+              <button class="vertical-event" data-event="forum_posted" data-props='{"forum_id":"f789","student_id":"u555","post_id":"p123","content_length":"150"}'>Forum Posted</button>
+              <button class="vertical-event" data-event="assignment_submitted" data-props='{"assignment_id":"a123","student_id":"u555","course_id":"ed101","submitted_on":"2025-05-10"}'>Assignment Submitted</button>
+              <button class="vertical-event" data-event="video_watched" data-props='{"video_id":"v345","student_id":"u555","course_id":"ed101","watched_duration":"30"}'>Video Watched</button>
+              <button class="vertical-event" data-event="discussion_joined" data-props='{"forum_id":"f789","student_id":"u555","course_id":"ed101"}'>Discussion Joined</button>
+              <button class="vertical-event" data-event="peer_review_given" data-props='{"review_id":"r234","student_id":"u555","assignment_id":"a123","score":"95"}'>Peer Review Given</button>
+              <button class="vertical-event" data-event="course_rated" data-props='{"course_id":"ed101","student_id":"u555","rating":"5"}'>Course Rated</button>
+              <button class="vertical-event" data-event="resource_downloaded" data-props='{"resource_id":"res001","student_id":"u555","course_id":"ed101","type":"pdf"}'>Resource Downloaded</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="gaming" style="display: none;">
+            <h4>Gaming Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="game_level_up" data-props='{"game_id":"gm555","level":"10","time_played":"2h","achievement":"badge-unlocked"}'>Game Level Up</button>
+              <button class="vertical-event" data-event="game_started" data-props='{"game_id":"gm555","mode":"multiplayer","player_count":"5","started_on":"2025-05-01"}'>Game Started</button>
+              <button class="vertical-event" data-event="achievement_unlocked" data-props='{"player_id":"u777","achievement_id":"ach001","game_id":"gm555","unlocked_on":"2025-05-01"}'>Achievement Unlocked</button>
+              <button class="vertical-event" data-event="item_purchased" data-props='{"player_id":"u777","item_id":"itm999","game_id":"gm555","price":"2.99"}'>Item Purchased</button>
+              <button class="vertical-event" data-event="friend_invited" data-props='{"player_id":"u777","friend_id":"u888","game_id":"gm555","invited_on":"2025-05-01"}'>Friend Invited</button>
+              <button class="vertical-event" data-event="game_paused" data-props='{"game_id":"gm555","player_id":"u777","paused_on":"2025-05-01T12:00:00Z"}'>Game Paused</button>
+              <button class="vertical-event" data-event="game_resumed" data-props='{"game_id":"gm555","player_id":"u777","resumed_on":"2025-05-01T12:10:00Z"}'>Game Resumed</button>
+              <button class="vertical-event" data-event="chat_sent" data-props='{"game_id":"gm555","player_id":"u777","message":"gg!","timestamp":"2025-05-01T12:05:00Z"}'>Chat Sent</button>
+              <button class="vertical-event" data-event="match_found" data-props='{"game_id":"gm555","player_id":"u777","match_id":"match123"}'>Match Found</button>
+              <button class="vertical-event" data-event="inventory_updated" data-props='{"player_id":"u777","game_id":"gm555","item_id":"itm999","change":"added"}'>Inventory Updated</button>
+              <button class="vertical-event" data-event="score_updated" data-props='{"game_id":"gm555","player_id":"u777","score":"2000"}'>Score Updated</button>
+              <button class="vertical-event" data-event="settings_changed" data-props='{"game_id":"gm555","player_id":"u777","setting":"audio","value":"off"}'>Settings Changed</button>
+            </div>
+          </div>
+
+          <div class="vertical-group" data-vertical="financial" style="display: none;">
+            <h4>Financial Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="account_opened" data-props='{"account_id":"fin001","account_number":"u123","account_type":"checking","opened_date":"2025-05-01"}'>Account Opened</button>
+              <button class="vertical-event" data-event="deposit_made" data-props='{"account_id":"fin001","amount":"500","currency":"USD","method":"ACH"}'>Deposit Made</button>
+              <button class="vertical-event" data-event="withdrawal_made" data-props='{"account_id":"fin001","amount":"200","currency":"USD","method":"ATM"}'>Withdrawal Made</button>
+              <button class="vertical-event" data-event="loan_applied" data-props='{"loan_id":"loan789","account_number":"u123","amount":"10000","term":"36 months"}'>Loan Applied</button>
+              <button class="vertical-event" data-event="payment_sent" data-props='{"payment_id":"pay456","amount":"150","currency":"USD","recipient":"merchantX"}'>Payment Sent</button>
+              <button class="vertical-event" data-event="statement_viewed" data-props='{"account_number":"u123","month":"April","year":"2025","format":"PDF"}'>Statement Viewed</button>
+              <button class="vertical-event" data-event="balance_checked" data-props='{"account_id":"fin001","account_number":"u123","checked_on":"2025-05-01T12:00:00Z"}'>Balance Checked</button>
+              <button class="vertical-event" data-event="card_activated" data-props='{"account_id":"fin001","card_id":"card789","activated_on":"2025-05-01"}'>Card Activated</button>
+              <button class="vertical-event" data-event="bill_paid" data-props='{"account_id":"fin001","bill_id":"bill123","amount":"80","currency":"USD"}'>Bill Paid</button>
+              <button class="vertical-event" data-event="transfer_initiated" data-props='{"account_id":"fin001","to_account":"fin002","amount":"150","currency":"USD"}'>Transfer Initiated</button>
+              <button class="vertical-event" data-event="profile_updated" data-props='{"account_id":"fin001","field":"email","new_value":"user@bank.com"}'>Profile Updated</button>
+              <button class="vertical-event" data-event="overdraft_alert" data-props='{"account_id":"fin001","account_number":"u123","amount":"-50","alerted_on":"2025-05-01T13:00:00Z"}'>Overdraft Alert</button>
+            </div>
+          </div>
+          <div class="vertical-group" data-vertical="gambling" style="display: none;">
+            <h4>Gambling Events</h4>
+            <div class="event-section-group">
+              <button class="vertical-event" data-event="bet_placed" data-props='{"bettor_id":"g123","amount":"50","game":"poker","odds":"2.0"}'>Bet Placed</button>
+              <button class="vertical-event" data-event="bet_won" data-props='{"bettor_id":"g123","amount":"100","game":"poker","payout":"2x"}'>Bet Won</button>
+              <button class="vertical-event" data-event="bet_lost" data-props='{"bettor_id":"g123","amount":"50","game":"poker","reason":"dealer_win"}'>Bet Lost</button>
+              <button class="vertical-event" data-event="game_started" data-props='{"game_id":"g456","game_type":"blackjack","table_id":"t001","player_count":"5"}'>Game Started</button>
+              <button class="vertical-event" data-event="bonus_claimed" data-props='{"bettor_id":"g123","bonus_type":"welcome","amount":"20","currency":"USD"}'>Bonus Claimed</button>
+              <button class="vertical-event" data-event="account_verified" data-props='{"bettor_id":"g123","method":"ID_check","verified_on":"2025-05-01","status":"approved"}'>Account Verified</button>
+              <button class="vertical-event" data-event="withdrawal_requested" data-props='{"bettor_id":"g123","amount":"25","currency":"USD","request_time":"2025-05-01T12:00:00Z"}'>Withdrawal Requested</button>
+              <button class="vertical-event" data-event="deposit_made" data-props='{"bettor_id":"g123","amount":"100","currency":"USD","deposit_method":"card"}'>Deposit Made</button>
+              <button class="vertical-event" data-event="free_spin_awarded" data-props='{"bettor_id":"g123","game_id":"g456","spin_count":"10"}'>Free Spin Awarded</button>
+              <button class="vertical-event" data-event="session_started" data-props='{"bettor_id":"g123","session_id":"sess001","start_time":"2025-05-01T11:00:00Z"}'>Session Started</button>
+              <button class="vertical-event" data-event="session_ended" data-props='{"bettor_id":"g123","session_id":"sess001","end_time":"2025-05-01T12:00:00Z"}'>Session Ended</button>
+              <button class="vertical-event" data-event="limit_reached" data-props='{"bettor_id":"g123","limit_type":"deposit","amount":"500"}'>Limit Reached</button>
+              <button class="vertical-event" data-event="responsible_gaming_tool_used" data-props='{"bettor_id":"g123","tool":"self-exclusion","activated_on":"2025-05-01"}'>Responsible Gaming Tool Used</button>
+            </div>
+          </div>
+        </div>
+        <div class="event-section">
+          <h3>Event</h3>
+          <a href="https://console.snowplowanalytics.com/b12539df-a711-42bd-bdfa-175308c55fd5/data-structures/a7e05924eab1e8dab5688b940788f31a6b96b71c99e8b3915f65929f3422e9fc" target="_blank">
+            <img src="images/customDemo_Event.png" alt="Event Banner" class="section-image"/>
+          </a>
+          <label>Event Name</label>
+          <input type="text" id="event1-name" placeholder="Enter event name">
+      
+          <label>Event Properties</label>
+          <div id="event-properties-container"></div>
+          <button type="button" id="add-event-property">➕ Add Event Property</button>
+          <button id="submit-event">Submit Event Details</button>
+        </div>
+
+
+
+
+
+        <!--------------Entity Section -------------->
+        <div id="entity-panels-container">
+        <div id="entity-section" class="event-section entity-panel">
+            <button class="close-panel-btn close-entity">✖</button>
+            <h3>Entity 1</h3>
+            <a href="https://console.snowplowanalytics.com/b12539df-a711-42bd-bdfa-175308c55fd5/data-structures/8a91a6e696c8a7c1c83229b740459a8abeb190d5f50849d2c4cda83b0087688a" target="_blank">
+              <img src="images/customDemo_Entity.png" alt="Entity Banner" class="section-image"/>
+            </a>
+            <label>Entity Name</label>
+            <input type="text" id="entity1-name" placeholder="Enter entity name">
+        
+            <label>Entity Properties</label>
+            <div id="entity-properties-container">
+              <div class="input-group">
+                <input type="text" class="entity-prop-name" placeholder="Enter property name">
+                <input type="text" class="entity-prop-value" placeholder="Enter property value">
+              </div>
+            </div>
+            <button type="button" id="add-entity-property">➕ Add Entity Property</button>
+            <button id="submit-all">Submit All Details</button>
+            <button type="button" id="add-entity-panel">➕ Add Another Entity Panel</button>
+          </div>
+        </div>
+        </div>
+
+  <div id="entity-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 10;">
+  <div class="modal-content">
+      <p>Would you like to pass through any entities?</p>
+      <button id="yes-btn">Yes</button>
+      <button id="no-btn">No</button>
+    </div>
+  </div>
+
+  <div id="empty-event-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 10;">
+    <div class="modal-content">
+      <p>Event not submitted because event name box is empty</p>
+      <button onclick="document.getElementById('empty-event-modal').style.display='none'">OK</button>
+    </div>
+  </div>
+
+  <div id="empty-entity-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 10;">
+    <div class="modal-content">
+      <p>Entity not submitted because entity name box is empty</p>
+      <button onclick="document.getElementById('empty-entity-modal').style.display='none'">OK</button>
+    </div>
+  </div>
+
+  <div id="toast" style="
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+    transition: opacity 0.3s ease;
+  ">
+</style>
+<style>
+  /* Moved dropdown styling to class for consistency */
+  .vertical-dropdown {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .vertical-label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+</style>
+  ✅ Event successfully tracked!
+  </div>
+
+  
+  <script>
+  function closeModal() {
+    document.getElementById("entity-modal").style.display = "none";
+  }
+
+
+
+
+
+  function showEntitySection() {
+    const entitySection = document.getElementById("entity-section");
+    entitySection.classList.add("show");
+  }
+
+
+  //Showing toast function
+  function showToast(message = "✅ Data Submitted!") {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.style.display = "block";
+  toast.style.opacity = "1";
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 300); // wait for fade-out
+  }, 2000); // show for 2s
+}
+
+
+
+
+  //Function To Change APPID And Collector Destination 
+  function setTrackerFields() {
+    const appId = document.getElementById("app-id").value || "Snowplow_EventSmith";
+    const collector = document.getElementById("collector").value;
+    const userID = document.getElementById("user-id").value
+    snowplow('setUserId', userID);
+
+    window.snowplow('EnhancedConsentPlugin.trackConsentAllow', {
+      consentScopes: ['necessary', 'marketing', 'personalization'],
+      basisForProcessing: 'consent',
+      consentUrl: 'https://www.example.com/',
+      consentVersion: '1.0',
+      domainsApplied: ['https://www.example.com/'],
+      gdprApplies: true
+    });
+    showToast(); // ✅ confirm tracked
+  }
+
+
+
+  
+
+  function addPropertyField(containerId, nameClass, valueClass) {
+    const container = document.getElementById(containerId);
+    const group = document.createElement("div");
+    group.className = "input-group";
+
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = nameClass;
+    nameInput.placeholder = "Enter property name";
+
+    const valueInput = document.createElement("input");
+    valueInput.type = "text";
+    valueInput.className = valueClass;
+    valueInput.placeholder = "Enter property value";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "➖";
+    removeBtn.type = "button";
+    removeBtn.onclick = () => group.remove();
+    removeBtn.style.width = "auto";
+    removeBtn.style.minWidth = "40px";
+    removeBtn.style.height = "40px";
+    removeBtn.style.display = "flex";
+    removeBtn.style.alignItems = "center";
+    removeBtn.style.justifyContent = "center";
+    removeBtn.style.backgroundColor = "#dc3545";
+    removeBtn.style.color = "#fff";
+    removeBtn.style.border = "none";
+    removeBtn.style.borderRadius = "6px";
+    removeBtn.style.cursor = "pointer";
+    removeBtn.style.fontSize = "16px";
+    removeBtn.style.marginTop = "5px";
+
+    group.appendChild(nameInput);
+    group.appendChild(valueInput);
+    group.appendChild(removeBtn);
+
+    container.appendChild(group);
+  }
+
+
+
+
+
+
+
+
+  //Function to collect properties
+  function collectProperties(containerId, nameClass, valueClass) {
+  const props = {};
+  const container = document.getElementById(containerId);
+  const groups = container.querySelectorAll(".input-group");
+
+  groups.forEach(group => {
+    const nameInput = group.querySelector(`.${nameClass}`);
+    const valueInput = group.querySelector(`.${valueClass}`);
+
+    if (nameInput && nameInput.value.trim()) {
+      props[nameInput.value.trim()] = valueInput?.value.trim() || '';
+    }
+  });
+
+  return props;
+}
+
+
+
+
+
+
+
+  //Function for logging event submissions
+function logSubmission(type, data) {
+  const log = document.getElementById("history-log");
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+
+  const hasEntities = data.entities && data.entities.length > 0;
+  const eventTitle = `Event: ${data.eventName || 'N/A'}`;
+  const entityTitle = hasEntities ? data.entities.map((e, i) => `Entity ${i+1}: ${e.entityName}`).join(' | ') : '';
+
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12 || 12;
+  const timestamp = `${hours}:${minutes}:${seconds}${ampm}`;
+
+  entry.innerHTML = `
+    <strong>${eventTitle}</strong><br>
+    ${hasEntities ? `<span style="border-top: 1px solid #ccc; display: block; margin-top: 6px; padding-top: 4px;">${entityTitle}</span>` : ""}
+    <div style="font-size: 12px; margin-top: 4px; color: #888;">${timestamp}</div>
+  `;
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "log-tooltip";
+
+  // 🔧 Fix: Ensure all properties are stringified clearly
+  let formattedTooltip = `Event Data:\n${JSON.stringify({
+    eventName: data.eventName,
+    properties: { ...(data.properties || {}) }
+  }, null, 2)}`;
+
+  if (hasEntities) {
+    formattedTooltip += `\n\nEntities Data:\n${JSON.stringify(data.entities, null, 2)}`;
+  }
+
+  tooltip.textContent = formattedTooltip;
+  entry.appendChild(tooltip);
+
+  entry.dataset.entryId = `entry-${Date.now()}`;
+  entry.addEventListener("click", () => {
+    const fullData = { ...data };
+    const pinned = document.getElementById("pinned-log");
+
+    // If the clicked entry is already pinned, unpin it
+    if (pinned.dataset.pinnedId === entry.dataset.entryId) {
+      pinned.innerHTML = "";
+      pinned.removeAttribute("data-pinned-id");
+      return;
+    }
+
+    // Otherwise, pin this entry
+    pinned.innerHTML = "";
+    pinned.dataset.pinnedId = entry.dataset.entryId;
+
+    const pinnedTitle = document.createElement("h5");
+    pinnedTitle.textContent = `${eventTitle}${entityTitle}`;
+    pinnedTitle.style.marginBottom = "10px";
+
+    const pinnedData = document.createElement("pre");
+    pinnedData.style.fontSize = "12px";
+    pinnedData.style.whiteSpace = "pre-wrap";
+    pinnedData.style.backgroundColor = "#f4f4f4";
+    pinnedData.style.padding = "10px";
+    pinnedData.style.borderRadius = "8px";
+    pinnedData.style.border = "1px solid #ccc";
+
+    pinnedData.textContent = formattedTooltip;
+
+    pinned.appendChild(pinnedTitle);
+    pinned.appendChild(pinnedData);
+    updateLivePreviewFromData(fullData);
+  });
+
+  log.prepend(entry);
+}
+
+
+
+
+
+
+  //Submit Event Only Function
+  function submitEventOnly() {
+    closeModal();
+    const eventData = {
+      eventName: document.getElementById("event1-name").value,
+      properties: collectProperties("event-properties-container", "event-prop-name", "event-prop-value")
+    };
+    logSubmission("Event", eventData);
+    appendWarehouseRow(eventData);
+    trackCustomEvent();
+    saveToVersionHistory("event", eventData);
+  }
+
+
+
+
+
+
+  //Submit Event and Entity Properties Function
+  function submitEventAndEntity() {
+    const eventData = {
+      eventName: document.getElementById("event1-name").value,
+      properties: collectProperties("event-properties-container", "event-prop-name", "event-prop-value")
+    };
+    const entityPanels = document.querySelectorAll(".entity-panel");
+    const entities = [];
+    entityPanels.forEach(panel => {
+      const entityNameInput = panel.querySelector("input[placeholder^='Enter entity name']");
+      const entityNameValue = entityNameInput ? entityNameInput.value : "";
+      const entityProps = {};
+      panel.querySelectorAll(".input-group").forEach(group => {
+        const nameInput = group.querySelector("input.entity-prop-name");
+        const valueInput = group.querySelector("input.entity-prop-value");
+        if (nameInput && nameInput.value.trim()) {
+          entityProps[nameInput.value.trim()] = valueInput ? valueInput.value.trim() : "";
+        }
+      });
+      entities.push({
+        entityName: entityNameValue,
+        properties: entityProps
+      });
+    });
+    const combinedData = {
+      ...eventData,
+      entities: entities
+    };
+    logSubmission("Event + Entities", combinedData);
+    appendWarehouseRow(combinedData);
+    trackCustomEventAndEntity();
+    saveToVersionHistory("event", combinedData);
+    entities.forEach(entity => {
+      saveToVersionHistory("entity", entity);
+    });
+  }
+
+
+
+
+
+
+  //Add Event Property Button
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("add-event-property").addEventListener("click", () => {
+      addPropertyField("event-properties-container", "event-prop-name", "event-prop-value");
+    });
+
+
+
+
+
+
+
+    //Add Entity Property Button
+    document.getElementById("add-entity-property").addEventListener("click", () => {
+      addPropertyField("entity-properties-container", "entity-prop-name", "entity-prop-value");
+    });
+
+    document.getElementById("data-product-id").value = "34a733c1-8550-4d61-92a3-c0827b685b29";
+    document.getElementById("app-id").value = "Snowplow_EventSmith";
+    document.getElementById("collector").value = "https://collector-sales-aws.snowplowanalytics.com";
+
+    document.getElementById("set-fields-btn").addEventListener("click", setTrackerFields);
+
+    document.getElementById("submit-event").addEventListener("click", function () {
+      const eventName = document.getElementById("event1-name").value.trim();
+      if (!eventName) {
+        document.getElementById("empty-event-modal").style.display = "flex";
+        return;
+      }
+      document.getElementById("entity-modal").style.display = "flex";
+    });
+
+    document.getElementById("yes-btn").addEventListener("click", function () {
+      closeModal();
+      showEntitySection();
+    });
+
+    document.getElementById("no-btn").addEventListener("click", submitEventOnly);
+    document.getElementById("submit-all").addEventListener("click", function() {
+      const entityPanels = document.querySelectorAll(".entity-panel");
+      let hasEmptyEntity = false;
+
+      entityPanels.forEach(panel => {
+        const entityNameInput = panel.querySelector("input[placeholder^='Enter entity name']");
+        if (!entityNameInput || !entityNameInput.value.trim()) {
+          hasEmptyEntity = true;
+        }
+      });
+
+      if (hasEmptyEntity) {
+        document.getElementById("empty-entity-modal").style.display = "flex";
+        return;
+      }
+
+      submitEventAndEntity();
+    });
+  });
+
+  //Dartk mode toggle logic
+  document.getElementById("toggle-theme").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+
+  // Optional: Save to localStorage so it remembers preference
+  const isDark = document.body.classList.contains("dark");
+  localStorage.setItem("darkMode", isDark);
+});
+
+// Optional: Load saved theme on page load
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("darkMode");
+  if (savedTheme === "true") {
+    document.body.classList.add("dark");
+  }
+});
+
+function updateLivePreview() {
+  const eventName = document.getElementById("event1-name").value;
+  const eventProps = collectProperties("event-properties-container", "event-prop-name", "event-prop-value");
+  const eventPreview = {
+    eventName: eventName,
+    properties: eventProps
+  };
+
+  // Collect data from all entity panels
+  const entityPanels = document.querySelectorAll(".entity-panel");
+  const entities = [];
+  entityPanels.forEach(panel => {
+    const nameInput = panel.querySelector("input[placeholder^='Enter entity name']");
+    const entityName = nameInput ? nameInput.value : "";
+    const propContainer = panel.querySelector(".entity-properties-container");
+    let entityProps = {};
+    if (propContainer && propContainer.id) {
+      entityProps = collectProperties(propContainer.id, "entity-prop-name", "entity-prop-value");
+    }
+    entities.push({
+      entityName,
+      properties: entityProps
+    });
+  });
+
+  const hasEvent = eventName || Object.keys(eventProps).length > 0;
+  const hasEntity = entities.some(e => e.entityName || Object.keys(e.properties).length > 0);
+
+  document.getElementById("event-preview").textContent = hasEvent
+    ? JSON.stringify(eventPreview, null, 2)
+    : "Waiting for input...";
+
+  document.getElementById("entity-preview").textContent = hasEntity
+    ? JSON.stringify(entities, null, 2)
+    : "Waiting for input...";
+}
+
+const observer = new MutationObserver(updateLivePreview);
+observer.observe(document.getElementById("event-properties-container"), { childList: true, subtree: true });
+observer.observe(document.getElementById("entity-panels-container"), { childList: true, subtree: true });
+
+document.querySelectorAll("input").forEach(input => {
+  input.addEventListener("input", updateLivePreview);
+});
+document.getElementById("event-properties-container").addEventListener("input", updateLivePreview);
+document.getElementById("entity-panels-container").addEventListener("input", updateLivePreview);
+
+  updateLivePreview(); // Initialize preview on load
+  document.getElementById("toggle-preview").addEventListener("click", () => {
+    const preview = document.getElementById("live-preview-section");
+    preview.style.display = (preview.style.display === "none" ? "block" : "none");
+  });
+  document.getElementById("live-preview-section").style.display = "none";
+  document.getElementById("toggle-warehouse").addEventListener("click", () => {
+    const warehouse = document.getElementById("warehouse-preview-section");
+    warehouse.style.display = (warehouse.style.display === "none" ? "block" : "none");
+  });
+  
+  document.getElementById("warehouse-preview-section").style.display = "none";
+
+  function appendWarehouseRow(data) {
+    const table = document.getElementById("warehouse-table-body");
+
+    const row = document.createElement("tr");
+    const now = new Date();
+    const timestamp = now.toISOString();
+
+    const propsFormatted = JSON.stringify(data.properties || {}, null, 2);
+    let entityNames = '';
+    let entityPropsFormatted = '';
+    if (data.entities && data.entities.length > 0) {
+      entityNames = data.entities.map(e => e.entityName).join(', ');
+      entityPropsFormatted = JSON.stringify(data.entities.map(e => e.properties), null, 2);
+    }
+
+    row.innerHTML = `
+      <td style="padding: 8px; border: 1px solid #ccc;">${data.eventName}</td>
+      <td style="padding: 8px; border: 1px solid #ccc;">${document.getElementById("data-product-id").value}</td>
+      <td style="padding: 8px; border: 1px solid #ccc;">${timestamp}</td>
+      <td style="padding: 8px; border: 1px solid #ccc;"><pre style="white-space: pre-wrap; margin: 0;">${propsFormatted}</pre></td>
+      <td style="padding: 8px; border: 1px solid #ccc;">${entityNames}</td>
+      <td style="padding: 8px; border: 1px solid #ccc;"><pre style="white-space: pre-wrap; margin: 0;">${entityPropsFormatted}</pre></td>
+    `;
+
+    // Remove placeholder if it's still there
+    if (table.children.length === 1 && table.children[0].children[0].colSpan === 6) {
+      table.innerHTML = '';
+    }
+
+    table.prepend(row);
+  }
+  
+  function updateLivePreviewFromData(data) {
+    const eventPreview = {
+      eventName: data.eventName || "",
+      properties: data.properties || {}
+    };
+
+    let entityPreview;
+    if (data.entities && data.entities.length > 0) {
+      entityPreview = data.entities;
+    } else {
+      entityPreview = { 
+        entityName: data.entityName || "", 
+        properties: data.entityProperties || {} 
+      };
+    }
+
+    const hasEvent = eventPreview.eventName || Object.keys(eventPreview.properties).length > 0;
+    const hasEntity = Array.isArray(entityPreview)
+      ? entityPreview.length > 0
+      : (entityPreview.entityName || Object.keys(entityPreview.properties).length > 0);
+
+    document.getElementById("event-preview").textContent = hasEvent
+      ? JSON.stringify(eventPreview, null, 2)
+      : "Waiting for input...";
+
+    const entityPreviewElem = document.getElementById("entity-preview");
+    entityPreviewElem.textContent = hasEntity
+      ? JSON.stringify(entityPreview, null, 2)
+      : "Waiting for input...";
+  }
+  
+  document.getElementById("toggle-ecomm").addEventListener("click", () => {
+    const panel = document.getElementById("ecomm-panel");
+    panel.style.display = panel.style.display === "none" ? "flex" : "none";
+    // Ensure the correct vertical group is shown on toggle
+    const verticalSelect = document.getElementById("vertical-select");
+    if (verticalSelect) {
+      const selected = verticalSelect.value;
+      document.querySelectorAll("#ecomm-panel .vertical-group").forEach(group => {
+        group.style.display = group.dataset.vertical === selected ? "block" : "none";
+      });
+    }
+  });
+
+  document.querySelectorAll(".ecomm-event").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.getAttribute("data-event");
+      const props = JSON.parse(btn.getAttribute("data-props") || "{}");
+      document.getElementById("event1-name").value = name;
+      updatePropertyFields("event-properties-container", props, "event-prop-name", "event-prop-value");
+      updateLivePreview();
+    });
+  });
+
+  document.querySelectorAll(".vertical-event").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.getAttribute("data-event");
+      const props = JSON.parse(btn.getAttribute("data-props") || "{}");
+      document.getElementById("event1-name").value = name;
+      updatePropertyFields("event-properties-container", props, "event-prop-name", "event-prop-value");
+      updateLivePreview();
+    });
+  });
+
+
+  //JS for handling event/entities version history - i.e. saving them into a panel
+  let pastEvents = JSON.parse(localStorage.getItem("pastEvents") || "[]");
+let pastEntities = JSON.parse(localStorage.getItem("pastEntities") || "[]");
+
+document.getElementById("toggle-version-history").addEventListener("click", () => {
+  const panel = document.getElementById("version-history-panel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+});
+
+function saveToVersionHistory(type, data) {
+  if (type === "event") {
+    pastEvents.unshift(data);
+    localStorage.setItem("pastEvents", JSON.stringify(pastEvents));
+  }
+  if (type === "entity") {
+    pastEntities.unshift(data);
+    localStorage.setItem("pastEntities", JSON.stringify(pastEntities));
+  }
+  renderVersionHistory();
+}
+
+function renderVersionHistory() {
+  const eventsList = document.getElementById("past-events-list");
+  const entitiesList = document.getElementById("past-entities-list");
+  eventsList.innerHTML = "";
+  entitiesList.innerHTML = "";
+
+  pastEvents.forEach((evt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = evt.eventName || `Event #${i + 1}`;
+    btn.setAttribute("draggable", "true");
+    btn.dataset.index = i;
+    btn.dataset.type = "event";
+    btn.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({ type: btn.dataset.type, index: btn.dataset.index }));
+    });
+    btn.onclick = () => loadEvent(evt);
+    btn.style = "padding: 6px; border-radius: 6px; cursor: pointer;";
+    eventsList.appendChild(btn);
+  });
+
+  pastEntities.forEach((ent, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = ent.entityName || `Entity #${i + 1}`;
+    btn.setAttribute("draggable", "true");
+    btn.dataset.index = i;
+    btn.dataset.type = "entity";
+    btn.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({ type: btn.dataset.type, index: btn.dataset.index }));
+    });
+    btn.onclick = () => loadEntity(ent);
+    btn.style = "padding: 6px; border-radius: 6px; cursor: pointer;";
+    entitiesList.appendChild(btn);
+  });
+}
+
+function loadEvent(data) {
+  document.getElementById("event1-name").value = data.eventName || "";
+  updatePropertyFields("event-properties-container", data.properties, "event-prop-name", "event-prop-value");
+  updateLivePreview();
+}
+
+function loadEntity(data) {
+  document.getElementById("entity1-name").value = data.entityName || "";
+  updatePropertyFields("entity-properties-container", data.properties, "entity-prop-name", "entity-prop-value");
+  updateLivePreview();
+}
+
+function updatePropertyFields(containerId, props, nameClass, valueClass) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  Object.entries(props).forEach(([k, v]) => {
+    const group = document.createElement("div");
+    group.className = "input-group";
+
+    const name = document.createElement("input");
+    name.type = "text";
+    name.className = nameClass;
+    name.value = k;
+
+    const value = document.createElement("input");
+    value.type = "text";
+    value.className = valueClass;
+    value.value = v;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "➖";
+    removeBtn.type = "button";
+    removeBtn.onclick = () => group.remove();
+    removeBtn.style.width = "auto";
+    removeBtn.style.minWidth = "40px";
+    removeBtn.style.height = "40px";
+    removeBtn.style.display = "flex";
+    removeBtn.style.alignItems = "center";
+    removeBtn.style.justifyContent = "center";
+    removeBtn.style.backgroundColor = "#dc3545";
+    removeBtn.style.color = "#fff";
+    removeBtn.style.border = "none";
+    removeBtn.style.borderRadius = "6px";
+    removeBtn.style.cursor = "pointer";
+    removeBtn.style.fontSize = "16px";
+    removeBtn.style.marginTop = "5px";
+
+    group.append(name, value, removeBtn);
+    container.appendChild(group);
+  });
+}
+
+renderVersionHistory(); // render on load
+
+const dropZone = document.getElementById("drop-zone");
+
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.style.backgroundColor = "#f66";
+});
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.style.backgroundColor = "#ddd";
+});
+
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.style.backgroundColor = "#ddd";
+
+  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+  const index = parseInt(data.index, 10);
+
+  if (data.type === "event") {
+    pastEvents.splice(index, 1);
+    localStorage.setItem("pastEvents", JSON.stringify(pastEvents));
+  } else if (data.type === "entity") {
+    pastEntities.splice(index, 1);
+    localStorage.setItem("pastEntities", JSON.stringify(pastEntities));
+  }
+
+  renderVersionHistory();
+  });
+  
+  // Add functionality to clone entity panels
+  document.getElementById("add-entity-panel").addEventListener("click", function() {
+    const container = document.getElementById("entity-panels-container");
+    const originalPanel = document.getElementById("entity-section");
+    const newPanel = originalPanel.cloneNode(true);
+    newPanel.removeAttribute("id");
+    // Determine panel count
+    const panelCount = container.querySelectorAll(".entity-panel").length + 1;
+    // Remove duplicate id from entity properties container in cloned panel and assign a unique id
+    const entityPropsContainer = newPanel.querySelector("#entity-properties-container");
+    if (entityPropsContainer) {
+      entityPropsContainer.removeAttribute("id");
+      const newContainerId = "entity-properties-container-" + panelCount;
+      entityPropsContainer.id = newContainerId;
+      entityPropsContainer.classList.add("entity-properties-container");
+    }
+    // Clear input values in the cloned panel
+    newPanel.querySelectorAll("input").forEach(input => input.value = "");
+    // Attach close button event listener to cloned panel's close button
+    const closeBtn = newPanel.querySelector(".close-entity");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function() {
+        newPanel.remove();
+      });
+    }
+    if (panelCount === 2) {
+      // For second panel, ensure the 'Submit All Details' button is present and add event listener
+      const submitBtn = newPanel.querySelector("#submit-all");
+      if (submitBtn) {
+        submitBtn.addEventListener("click", submitEventAndEntity);
+      }
+    } else {
+      // Remove duplicate 'Submit All Details' button from cloned panel
+      const submitBtn = newPanel.querySelector("#submit-all");
+      if (submitBtn) { submitBtn.remove(); }
+    }
+    newPanel.querySelector("h3").textContent = "Entity " + (panelCount);
+    // Attach event listener for add entity property button in cloned panel
+    const addEntityPropBtn = Array.from(newPanel.querySelectorAll("button"))
+      .find(btn => btn.textContent.trim() === "➕ Add Entity Property");
+    if (addEntityPropBtn) {
+      // Ensure the button does not have a duplicate id
+      addEntityPropBtn.removeAttribute("id");
+      addEntityPropBtn.addEventListener("click", function() {
+        const containerElem = newPanel.querySelector(".entity-properties-container");
+        // Use the container's id to correctly add a new property field
+        addPropertyField(containerElem.id, "entity-prop-name", "entity-prop-value");
+      });
+    }
+    container.appendChild(newPanel);
+  });
+  
+  // Delegate close button functionality for existing entity panels
+  document.getElementById("entity-panels-container").addEventListener("click", function(e) {
+    if (e.target && e.target.classList.contains("close-entity")) {
+      e.target.closest(".entity-panel").remove();
+    }
+  });
+  // Add clear all version history button logic
+  document.getElementById("clear-events").addEventListener("click", () => {
+    if (confirm("Are you sure you want to clear all events from version history?")) {
+      pastEvents = [];
+      localStorage.removeItem("pastEvents");
+      renderVersionHistory();
+    }
+  });
+
+  document.getElementById("clear-entities").addEventListener("click", () => {
+    if (confirm("Are you sure you want to clear all entities from version history?")) {
+      pastEntities = [];
+      localStorage.removeItem("pastEntities");
+      renderVersionHistory();
+    }
+  });
+
+  // Vertical dropdown logic for ecomm-panel
+const verticalSelect = document.getElementById("vertical-select");
+if (verticalSelect) {
+  verticalSelect.addEventListener("change", function () {
+    const selected = this.value;
+    document.querySelectorAll("#ecomm-panel .vertical-group").forEach(group => {
+      group.style.display = group.dataset.vertical === selected ? "block" : "none";
+    });
+  });
+
+  // Ensure the default value is applied on load and toggle
+  const defaultVertical = verticalSelect.value;
+  document.querySelectorAll("#ecomm-panel .vertical-group").forEach(group => {
+    group.style.display = group.dataset.vertical === defaultVertical ? "block" : "none";
+  });
+}
+
+function getRandomElements(array, count) {
+  const shuffled = [...array].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+function generateRandomCombinations() {
+  if (pastEvents.length === 0 || pastEntities.length === 0) {
+    alert('Need both events and entities in version history to generate combinations');
+    return;
+  }
+
+  // Generate 10 random combinations
+  for (let i = 0; i < 10; i++) {
+    // Get random event
+    const randomEvent = getRandomElements(pastEvents, 1)[0];
+    
+    // Get 1-3 random entities
+    const entityCount = Math.floor(Math.random() * 3) + 1;
+    const randomEntities = getRandomElements(pastEntities, entityCount);
+
+    // Set the event name and properties in the form
+    document.getElementById("event1-name").value = randomEvent.eventName;
+    updatePropertyFields("event-properties-container", randomEvent.properties, "event-prop-name", "event-prop-value");
+
+    // Set the first entity
+    document.getElementById("entity1-name").value = randomEntities[0].entityName;
+    updatePropertyFields("entity-properties-container", randomEntities[0].properties, "entity-prop-name", "entity-prop-value");
+
+    // Create combined data for logging
+    const combinedData = {
+      eventName: randomEvent.eventName,
+      properties: randomEvent.properties,
+      entities: randomEntities.map(entity => ({
+        entityName: entity.entityName,
+        properties: entity.properties
+      }))
+    };
+
+    // Submit the combination
+    logSubmission("Random Combination", combinedData);
+    appendWarehouseRow(combinedData);
+    
+    // Call the tracking function which will read from the form
+    trackCustomEventAndEntity();
+    saveToVersionHistory("event", combinedData);
+  }
+
+  showToast("✅ Generated 10 random combinations!");
+}
+
+// Add event listener for the new button
+document.addEventListener('DOMContentLoaded', function() {
+  // ... existing initialization code ...
+  
+  const generateButton = document.getElementById('generate-combinations');
+  if (generateButton) {
+    generateButton.addEventListener('click', generateRandomCombinations);
+  }
+});
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
+
+
